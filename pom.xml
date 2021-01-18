@@ -6,7 +6,7 @@
 
   <groupId>com.github.rccookie</groupId>
   <artifactId>greenfoot-widgets</artifactId>
-  <version>1.0</version>
+  <version>1.0.1.1</version>
 
   <name>greenfoot-widgets</name>
   <!-- FIXME change it to the project's website -->
@@ -45,12 +45,19 @@
           <configuration>
             <outputDirectory>${basedir}/target/classes</outputDirectory>
             <includeEmptyDirs>true</includeEmptyDirs>
-            <recources>
-              <recource>
+            <resources>
+              <resource>
                 <directory>${baseDir}/src/main/recources</directory>
                 <filtering>false</filtering>
-              </recource>
-            </recources>
+              </resource>
+              <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                  <include>**/*.java</include>
+                  <include>**/*.gwt.xml</include>
+                </includes>
+              </resource>
+            </resources>
           </configuration>
         </plugin>
         <plugin>
