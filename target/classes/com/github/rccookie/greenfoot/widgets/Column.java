@@ -15,12 +15,6 @@ public class Column extends Structure {
         super(children);
     }
 
-    // TODO: Check if null as image still works
-
-    /*private static final int heightFor(int width) {
-        return (int)(width * WIDTH_HEIGHT_RATIO);
-    }*/
-
     @Override
     protected List<RenderTask> getChildrenRenderTasks(Size maxSize, List<Widget> children) {
         int childHeight = (int)(maxSize.width * WIDTH_HEIGHT_RATIO);
