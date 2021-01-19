@@ -2,14 +2,12 @@ package com.github.rccookie.greenfoot.widgets;
 
 import java.util.Objects;
 
-import com.github.rccookie.greenfoot.core.AdvancedActor;
+import com.github.rccookie.greenfoot.core.CoreActor;
 
 import greenfoot.GreenfootImage;
 import greenfoot.World;
 
-public class WidgetHolder extends AdvancedActor {
-
-    private static final long serialVersionUID = -2231793417951542023L;
+public class WidgetHolder extends CoreActor {
 
     public static long MIN_REPAINT_DIF = 10;
 
