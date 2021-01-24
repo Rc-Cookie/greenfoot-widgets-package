@@ -6,7 +6,7 @@
 
   <groupId>com.github.rccookie</groupId>
   <artifactId>greenfoot-widgets</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.2.1</version>
 
   <name>greenfoot-widgets</name>
   <!-- FIXME change it to the project's website -->
@@ -20,13 +20,8 @@
   <dependencies>
     <dependency>
       <groupId>com.github.rccookie</groupId>
-      <artifactId>geometry</artifactId>
-      <version>1.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.rccookie</groupId>
       <artifactId>greenfoot-core</artifactId>
-      <version>2.0.0.1</version>
+      <version>2.0.1.4</version>
     </dependency>
   </dependencies>
 
