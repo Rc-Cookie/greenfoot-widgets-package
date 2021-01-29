@@ -1,13 +1,15 @@
 package com.github.rccookie.greenfoot.widgets.prefabs;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.function.Consumer;
 
+import com.github.rccookie.greenfoot.event.LoginManager;
+import com.github.rccookie.greenfoot.event.User;
+import com.github.rccookie.greenfoot.event.LoginManager.UserState;
 import com.github.rccookie.greenfoot.widgets.*;
 
 import greenfoot.GreenfootImage;
 import greenfoot.UserInfo;
+import greenfoot.util.GreenfootUtil;
 
 /**
  * A login page that supports logging in, registering, resetting your
@@ -30,8 +32,7 @@ public class Login extends Dimension {
     static final greenfoot.Color BUTTON_COLOR = new greenfoot.Color(242, 242, 242);
     static final long WELCOME_TIME = 1000;
 
-    private State state;
-    private UserInfo user = null;
+    private final LoginManager manager = new LoginManager();
 
     /**
      * Creates a new login page.
@@ -40,12 +41,8 @@ public class Login extends Dimension {
      *                there will be passed the user that logged in, or
      *                {@code null} if a guest logged in
      */
-    @SuppressWarnings("unchecked")
-    public Login(Consumer<UserInfo> onLogin) {
+    public Login(Consumer<User> onLogin) {
         super(250, 250);
-        final UserInfo user = UserInfo.getMyInfo();
-        if(user == null) state = State.GUEST;
-        else state = user.getInt(UserInfo.NUM_INTS - 1) == 0 ? State.NEEDS_REGISTERING : State.REGISTERED;
         addChildren(
             new Color(new greenfoot.Color(0, 0, 0, 50)),
             new Offset(
@@ -90,30 +87,11 @@ public class Login extends Dimension {
                                             String username = find(USERNAME).as(TextInputButton.class).getEnteredText();
                                             String p = find(PASSWORD).as(TextInputButton.class).getEnteredText();
                                             Text error = find(ERROR).as(Text.class);
-                                            if(username == null || p == null) {
-                                                error.setTitle("Please enter username and password.").setVisible(true);
-                                                return;
+                                            try {
+                                                manager.loginUser(username, p);
+                                            } catch(Exception e) {
+                                                error.setTitle(e.getMessage()).setVisible(true);
                                             }
-                                            int entered = passwordHash(p);
-                                            int actual = -1;
-                                            UserInfo actualUser = null;
-                                            if(user != null && Objects.equals(user.getUserName(), username)) {
-                                                actual = (actualUser = user).getInt(UserInfo.NUM_INTS - 1);
-                                            }
-                                            else {
-                                                List<UserInfo> users = UserInfo.getTop(100000);
-                                                for(UserInfo u : users) {
-                                                    if(Objects.equals(u.getUserName(), username)) {
-                                                        actual = (actualUser = u).getInt(UserInfo.NUM_INTS - 1);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            if(entered != actual) {
-                                                error.setTitle("Incorrect username or password.").setVisible(true);
-                                                return;
-                                            }
-                                            this.user = actualUser;
                                             find(Folder.class).setPage(WELCOME_PAGE);
                                         }
                                     ),
@@ -156,29 +134,11 @@ public class Login extends Dimension {
                                             Text error = find(ERROR).setVisible(false).as(Text.class).setTitle("").as(Text.class);
                                             String p1 = find(PASSWORD_RESET_1).as(TextInputButton.class).getEnteredText();
                                             String p2 = find(PASSWORD_RESET_2).as(TextInputButton.class).getEnteredText();
-                                            if(p1 == null || p2 == null) {
-                                                error.setTitle("Please enter both fields.").setVisible(true);
-                                                return;
-                                            }
-                                            if(!p1.equals(p2)) {
-                                                error.setTitle("The two passwords differ.").setVisible(true);
-                                                return;
-                                            }
-                                            if(p1.length() < 5) {
-                                                error.setTitle("The password needs at least 5 chars.").setVisible(true);
-                                                return;
-                                            }
-                                            if(p1.length() > 30) {
-                                                error.setTitle("The password can have at most 30 chars.").setVisible(true);
-                                                return;
-                                            }
                                             try {
-                                                user.setInt(UserInfo.NUM_INTS - 1, passwordHash(p1));
-                                                user.store();
+                                                manager.resetPassword(p1, p2);
                                                 find(Folder.class).setPage(RESET_SUCCESS_PAGE);
                                             } catch(Exception e) {
-                                                error.setTitle("Something went wrong. Try again later.").setVisible(true);
-                                                e.printStackTrace(System.out);
+                                                error.setTitle(e.getMessage());
                                             }
                                         }
                                     ),
@@ -223,7 +183,7 @@ public class Login extends Dimension {
                 ),
                 new Page(
                     REGISTER_PAGE,
-                    new Title("Register '" + (user != null ? user.getUserName() : "") + "'"),
+                    new Title("Register '" + GreenfootUtil.getUserName() + "'"),
                     new Offset(
                         0.5,
                         0.9,
@@ -258,29 +218,11 @@ public class Login extends Dimension {
                                             Text error = find(ERROR).setVisible(false).as(Text.class).setTitle("").as(Text.class);
                                             String p1 = find(PASSWORD_REGISTER_1).as(TextInputButton.class).getEnteredText();
                                             String p2 = find(PASSWORD_REGISTER_2).as(TextInputButton.class).getEnteredText();
-                                            if(p1 == null || p2 == null) {
-                                                error.setTitle("Please enter both fields.").setVisible(true);
-                                                return;
-                                            }
-                                            if(!p1.equals(p2)) {
-                                                error.setTitle("The two passwords differ.").setVisible(true);
-                                                return;
-                                            }
-                                            if(p1.length() < 5) {
-                                                error.setTitle("The password needs at least 5 chars.").setVisible(true);
-                                                return;
-                                            }
-                                            if(p1.length() > 30) {
-                                                error.setTitle("The password can have at most 30 chars.").setVisible(true);
-                                                return;
-                                            }
                                             try {
-                                                user.setInt(UserInfo.NUM_INTS - 1, passwordHash(p1));
-                                                user.store();
+                                                manager.register(p1, p2);
                                                 find(Folder.class).setPage(REGISTER_SUCCESS_PAGE);
-                                                state = State.REGISTERED;
                                             } catch(Exception e) {
-                                                error.setTitle("Something went wrong. Try again later.").setVisible(true);
+                                                error.setTitle(e.getMessage()).setVisible(true);
                                             }
                                         }
                                     ),
@@ -304,7 +246,7 @@ public class Login extends Dimension {
                                     Structure extraButton = find(EXTRA_BUTTON).as(Structure.class);
                                     extraButton.removeChild(SizedButton.class);
                                     extraButton.addChild(resetPasswordButton());
-                                    find(USERNAME).as(TextInputButton.class).enterText(user.getUserName());
+                                    find(USERNAME).as(TextInputButton.class).enterText(GreenfootUtil.getUserName());
                                 },
                                 new BigText("Back", Color.WHITE)
                             ),
@@ -326,15 +268,15 @@ public class Login extends Dimension {
                                 if(start == -1) {
                                     start = System.currentTimeMillis();
                                     find(WELCOME_TEXT).as(BigText.class)
-                                        .setTitle("Welcome" + (Login.this.user != null ? " " + Login.this.user.getUserName() : "") + "!");
-                                    if(Login.this.user != null) {
-                                        GreenfootImage userImage = Login.this.user.getUserImage();
+                                        .setTitle("Welcome" + (manager.isGuest() ? "" : " " + manager.getUser().getName()) + "!");
+                                    if(!manager.isGuest()) {
+                                        GreenfootImage userImage = manager.getUser().getImage();
                                         find(WELCOME_IMAGE).as(Image.class).setImage(userImage);
                                         find(WELCOME_IMAGE).getParent().setVisible(true);
                                     }
                                 }
                                 else if(!executed && System.currentTimeMillis() - start >= WELCOME_TIME) {
-                                    onLogin.accept(Login.this.user);
+                                    onLogin.accept(manager.getUser());
                                     start = -1;
                                     find(Folder.class).setPage(LOGIN_PAGE);
                                 }
@@ -357,7 +299,7 @@ public class Login extends Dimension {
 
 
 
-        if(state == State.NEEDS_REGISTERING) {
+        if(manager.getUserState() == UserState.CAN_REGISTER) {
             find(EXTRA_BUTTON).as(Structure.class).addChild(
                 new SizedButton(
                     new Button(
@@ -369,8 +311,8 @@ public class Login extends Dimension {
                 )
             );
         }
-        else if(state == State.REGISTERED) {
-            find(USERNAME).as(TextInputButton.class).enterText(user.getUserName());
+        else if(manager.getUserState() == UserState.REGISTERED) {
+            find(USERNAME).as(TextInputButton.class).enterText(GreenfootUtil.getUserName());
             find(EXTRA_BUTTON).as(Structure.class).addChild(resetPasswordButton());
         }
         else {
@@ -426,12 +368,6 @@ public class Login extends Dimension {
     }
 
 
-
-    private enum State {
-        GUEST,
-        NEEDS_REGISTERING,
-        REGISTERED
-    }
 
     private class PasswordInputButton extends SizedButton {
 
